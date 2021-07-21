@@ -1,0 +1,76 @@
+version: "3"
+
+volumes:
+    omop-on-fhir-pg-data:
+
+services:
+    omop-on-fhir-pg:
+        container_name: omop-on-fhir-pg
+        image: omop-on-fhir-pg
+        build:
+          context: docker/omop-on-fhir-pg
+          dockerfile: Dockerfile
+        volumes:
+            - "omop-on-fhir-pg-data:/var/lib/postgresql/data/pgdata"
+            - "${PWD}/docker/omop-on-fhir-pg/my.conf:/etc/postgresql/postgresql.conf"
+            - "${PWD}/files-athena:/opt/sql/vocabulary_download"
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: example
+            POSTGRES_DB: omop_db
+            PGDATA: /var/lib/postgresql/data/pgdata
+
+    omop-on-fhir-adminer:
+        container_name: omop-on-fhir-adminer
+        image: adminer
+        depends_on:
+            - omop-on-fhir-pg
+        links:
+            - omop-on-fhir-pg
+        ports:
+            - "8088:8080"
+        environment:
+            ADMINER_DEFAULT_DB_DRIVER: pgsql
+            ADMINER_DEFAULT_DB_HOST: "omop-on-fhir-pg"
+            ADMINER_DEFAULT_DB_NAME: "omop_db"
+
+    omop-on-fhir:
+        container_name: omop-on-fhir
+        build:
+            context: docker/omop-on-fhir
+            dockerfile: Dockerfile
+        depends_on:
+            - omop-on-fhir-pg
+        links:
+            - omop-on-fhir-pg
+        ports:
+            - "8080:8080"
+        environment:
+            JDBC_USERNAME: postgres
+            JDBC_PASSWORD: example
+            JDBC_URL: jdbc:postgresql://omop-on-fhir-pg:5432/omop_db
+            SERVERBASE_URL: http://localhost:8080/omoponfhir2/fhir
+            AUTH_BASIC: fhirguy:fhirpass
+            FHIR_READONLY: "false"
+
+    omop-on-fhir-import-fhir-json:
+        container_name: omop-on-fhir-import-fhir-json
+        build:
+            context: docker/import-fhir-json
+            dockerfile: Dockerfile
+        depends_on:
+            - omop-on-fhir
+        links:
+            - omop-on-fhir
+        environment:
+            FHIR_SERVER: "http://omop-on-fhir:8080/omoponfhir2/fhir/"
+            FHIR_FOLDER: "./test"
+            FHIR_AUTH_TYPE: "basic"
+            FHIR_VERSION: "DSTU2"
+            FHIR_DB_NAME: "db/db.sqlite"
+            OMOPONFHIR_USER: "fhirguy"
+            OMOPONFHIR_PASSWORD: "fhirpass"
+            SLEEP_FOR: "30"
+        volumes:
+            - "${PWD}/files-fhir:/app/import-fhir-json/test"
+            - "${PWD}/docker/import-fhir-json/runtime:/app/import-fhir-json/db"

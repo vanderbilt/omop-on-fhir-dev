@@ -1,0 +1,1 @@
+../omop-init-available/20_omop_vocab_load.sql
