@@ -44,8 +44,8 @@ RUN mvn clean install
 FROM tomcat:alpine
 
 # args!
-ARG FHIR_VERSION="${FHIR_VERSION:-dstu2}"
-ARG WAR_NAME="${WAR_NAME:-omoponfhir2}"
+ARG FHIR_VERSION="${FHIR_VERSION}"
+ARG OOF_WAR_NAME="${OOF_WAR_NAME}"
 ARG WORKDIR_PATH="/usr/src/app"
 
 ARG CATALINA_HOME="${CATALINA_HOME}"
@@ -56,7 +56,7 @@ RUN apk add --update --no-cache \
 		postgresql-client
 
 # Copy GT-FHIR war file to webapps.
-COPY --from=builder "${WORKDIR_PATH}/omoponfhir-${FHIR_VERSION}-server/target/omoponfhir-${FHIR_VERSION}-server.war" "${CATALINA_HOME}/webapps/${WAR_NAME}.war"
+COPY --from=builder "${WORKDIR_PATH}/omoponfhir-${FHIR_VERSION}-server/target/omoponfhir-${FHIR_VERSION}-server.war" "${CATALINA_HOME}/webapps/${OOF_WAR_NAME}.war"
 
 # fetch wait-for-it.sh
 RUN wget -O /opt/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \

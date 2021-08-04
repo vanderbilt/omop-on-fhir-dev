@@ -47,6 +47,7 @@ services:
                 FHIR_VERSION: "${FHIR_VERSION:-dstu2}"      # this determines the repository we check out
                 OOF_GH_BRANCH: "${OOF_GH_BRANCH:-master}"   # this determines which branch from the above repository we use
                 MAVEN_VERSION: "${MAVEN_VERSION:-3.6.1}"    # this determines the version of the build container
+                OOF_WAR_NAME: "${OOF_WAR_NAME:-omoponfhir2}"
         container_name: omop-on-fhir
         depends_on:
             - omop-on-fhir-pg
