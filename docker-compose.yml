@@ -39,6 +39,8 @@ services:
         build:
             context: docker/omop-on-fhir
             dockerfile: Dockerfile
+            args:
+                MAVEN_VERSION: "${MAVEN_VERSION:-3.6.1}"
         depends_on:
             - omop-on-fhir-pg
         links:
