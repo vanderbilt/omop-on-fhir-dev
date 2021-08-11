@@ -48,12 +48,17 @@ services:
                 OOF_GH_BRANCH: "${OOF_GH_BRANCH:-master}"   # this determines which branch from the above repository we use
                 MAVEN_VERSION: "${MAVEN_VERSION:-3.6.1}"    # this determines the version of the build container
                 OOF_WAR_NAME: "${OOF_WAR_NAME:-omoponfhir2}"
+                DB_TYPE: "${DB_TYPE:--sql}"
         container_name: omop-on-fhir
         depends_on:
             - omop-on-fhir-pg
         environment:
             JDBC_USERNAME: postgres
             JDBC_PASSWORD: example
+            PG_HOST: "omop-on-fhir-pg"
+            PG_PORT: "5432"
+            PG_DATABASE: "omop_db"
+            PG_CURRENTSCHEMA: "public"
             JDBC_URL: jdbc:postgresql://omop-on-fhir-pg:5432/omop_db
             SERVERBASE_URL: http://localhost:8080/omoponfhir2/fhir
             AUTH_BASIC: fhirguy:fhirpass

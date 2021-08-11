@@ -7,6 +7,7 @@ FROM alpine:3 as staging
 ARG OOF_GH_PRJ_URL="https://github.com/omoponfhir"
 ARG OOF_GH_BRANCH="${OOF_GH_BRANCH}"
 ARG FHIR_VERSION="${FHIR_VERSION}"
+ARG DB_TYPE="${DB_TYPE}"
 
 # install git
 RUN apk add --update --no-cache \
@@ -15,8 +16,8 @@ RUN apk add --update --no-cache \
 # 1. clone repo
 # 2. check out specific branch / version
 # 3. init and pull down any / all submodules
-RUN git clone "https://github.com/omoponfhir/omoponfhir-main-${FHIR_VERSION}.git" \
-	&& cd "omoponfhir-main-${FHIR_VERSION}" \
+RUN git clone "https://github.com/omoponfhir/omoponfhir-main-${FHIR_VERSION}${DB_TYPE}.git" \
+	&& cd "omoponfhir-main-${FHIR_VERSION}${DB_TYPE}" \
 	&& git checkout "${OOF_GH_BRANCH}" \
 	&& git submodule init \
 	&& git submodule update --recursive
@@ -29,10 +30,11 @@ RUN apk update --no-cache
 # args!
 ARG FHIR_VERSION="${FHIR_VERSION}"
 ARG WORKDIR_PATH="/usr/src/app"
+ARG DB_TYPE="${DB_TYPE}"
 
 # copy in souce code from staging container
 # note: i do this as mv that comes with busybox-utils tries to be "helpful" and just gets in my way.
-COPY --from=staging "/omoponfhir-main-${FHIR_VERSION}" "${WORKDIR_PATH}"
+COPY --from=staging "/omoponfhir-main-${FHIR_VERSION}${DB_TYPE}" "${WORKDIR_PATH}"
 
 # set working directory for rest of stage
 WORKDIR "${WORKDIR_PATH}"
