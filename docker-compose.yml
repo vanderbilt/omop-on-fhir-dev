@@ -2,7 +2,7 @@ version: "3"
 
 volumes:
     omop-on-fhir-pg-data:
-
+    omop-on-fhir-synthea-files:
 networks:
     backend:
 
@@ -68,6 +68,23 @@ services:
         ports:
             - "8080:8080"
 
+    omop-on-fhir-files:
+        build:
+            context: docker/generate-fhir-synthea
+            dockerfile: Dockerfile
+            args:
+                SYNTHEA_BRANCH: "${SYNTHEA_BRANCH:-master-branch-latest}"
+                SYNTHEA_FILE: "${SYNTHEA_FILE:-synthea-with-dependencies}"
+                NUMBER_OF_FILES: ${NUMBER_OF_FILES:-100}
+        #create docker volume to share between containers
+        volumes:
+            - "omop-on-fhir-synthea-files:/home/gradle/output/fhir"
+        container_name: omop-on-fhir-files
+        depends_on:
+            - omop-on-fhir
+        networks:
+            - backend
+
     omop-on-fhir-import-fhir-json:
         container_name: omop-on-fhir-import-fhir-json
         build:
@@ -75,6 +92,7 @@ services:
             dockerfile: Dockerfile
         depends_on:
             - omop-on-fhir
+            - omop-on-fhir-files
         environment:
             FHIR_SERVER: "http://omop-on-fhir:8080/omoponfhir2/fhir/"
             FHIR_FOLDER: "./test"
@@ -87,5 +105,6 @@ services:
         networks:
             - backend
         volumes:
-            - "${PWD}/files-fhir:/app/import-fhir-json/test"
+            # replace next volume with shared volume declared above
+            - "omop-on-fhir-synthea-files:/app/import-fhir-json/test"
             - "${PWD}/docker/import-fhir-json/runtime:/app/import-fhir-json/db"
