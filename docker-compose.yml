@@ -77,11 +77,11 @@ services:
                 SYNTHEA_FILE: "${SYNTHEA_FILE:-synthea-with-dependencies}"
                 NUMBER_OF_FILES: ${NUMBER_OF_FILES:-100}
         #create docker volume to share between containers
+        stdin_open: true # docker run -i
+        tty: true        # docker run -t
         volumes:
-            - "omop-on-fhir-synthea-files:/home/gradle/output/fhir"
+            - "omop-on-fhir-synthea-files:/output/fhir"
         container_name: omop-on-fhir-files
-        depends_on:
-            - omop-on-fhir
         networks:
             - backend
 
